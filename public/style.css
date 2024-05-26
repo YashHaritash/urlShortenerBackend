@@ -1,0 +1,20 @@
+body {
+    background-color: black;
+}
+
+#inp {
+    width: 24rem;
+}
+#copy{
+    width: 7rem;
+}
+
+#top{
+    color: #bcd4e6;
+}
+
+#container{
+    background-color: #2a2b2e;
+    height: 12rem;
+    border-radius: 8px;
+}
