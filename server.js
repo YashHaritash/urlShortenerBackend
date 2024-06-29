@@ -6,7 +6,7 @@ app.use(express.urlencoded({extended:true}));
 
 
 const db = require('./db/model').db;
-const urlRoute = require('./routes/index').route
+const urlRoute = require('./routes/index')
 
 app.use('/home',express.static(__dirname+'/public'))
 app.use('/',urlRoute);
@@ -21,7 +21,3 @@ db.sync()
     .catch((err)=>{
         console.log("Problem Syncing the db")
     })
-
-
-
-
