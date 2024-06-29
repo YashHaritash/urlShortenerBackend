@@ -4,6 +4,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+require('dotenv').config();
+
 
 app.use(express.urlencoded({extended:true}));
 
