@@ -1,5 +1,7 @@
-const route = require('express').Router();
-const Urls = require('../db/model').Urls;
+const express = require('express');
+const route = express.Router();
+const Url = require('./../db/model');
+const validator = require('validator');
 
 async function getUniqueShortUrl() {
     const s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -12,32 +14,23 @@ async function getUniqueShortUrl() {
     return url;
 }
 
-
 const MAX_URLS = 1000;
 
 async function checkAndClearUrls() {
-    const count = await Urls.count(); 
+    const count = await Url.countDocuments();
 
     if (count > MAX_URLS) {
-
-        const oldestUrls = await Urls.findAll({
-            order: [['createdAt', 'ASC']],
-            limit: count - MAX_URLS 
-        });
-
+        const oldestUrls = await Url.find().sort({ createdAt: 1 }).limit(count - MAX_URLS);
 
         for (let url of oldestUrls) {
-            await url.destroy();
+            await url.remove();
         }
     }
 }
 
-
 route.get('/:short', async (req, res) => {
     try {
-        const data = await Urls.findOne({
-            where: { shortUrl: req.params.short }
-        });
+        const data = await Url.findOne({ shortUrl: req.params.short });
 
         if (data) {
             res.redirect(data.fullUrl);
@@ -49,7 +42,6 @@ route.get('/:short', async (req, res) => {
     }
 });
 
-
 route.post('/new', async (req, res) => {
     try {
         const { full } = req.body;
@@ -57,16 +49,26 @@ route.post('/new', async (req, res) => {
             return res.status(400).send({ error: "Full URL is required" });
         }
 
-        const existingFullUrl = await Urls.findOne({ where: { fullUrl: full } });
+        // if (!validator.isURL(full)) {
+        //     return res.status(400).send({ error: "Invalid URL" });
+        // }
+
+        // Check if the input URL is already a shortened URL
+        const existingShortUrl = await Url.findOne({ shortUrl: full.slice(-5) });
+        if (existingShortUrl) {
+            return res.status(200).send({ message: "Input URL is already a shortened URL" , shortUrl: existingShortUrl.shortUrl });
+        }
+
+        // Check if the full URL already exists
+        const existingFullUrl = await Url.findOne({ fullUrl: full });
         if (existingFullUrl) {
             return res.status(200).send({ message: "Full URL already exists", shortUrl: existingFullUrl.shortUrl });
         }
 
         const shortUrl = await getUniqueShortUrl();
 
-
-        const newAdd = await Urls.create({ shortUrl, fullUrl: full });
-
+        const newAdd = new Url({ shortUrl, fullUrl: full });
+        await newAdd.save();
 
         await checkAndClearUrls();
 

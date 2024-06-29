@@ -22,7 +22,7 @@ function App() {
       });
 
       if (!response.ok) {
-        toast.error("Something Went Wrong");
+        toast.error(data.message ? data.message : "Something Went Wrong");
         return;
       }
 

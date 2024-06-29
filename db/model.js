@@ -1,26 +1,24 @@
-const Sequelize = require('sequelize');
-const db = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
-    host: process.env.DB_HOST,
-    dialect: process.env.DB_DIALECT
-});
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-const Urls = db.define('url', {
-    id: {
-        type: Sequelize.DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true
-    },
+const urlSchema = new Schema({
     shortUrl: {
-        type: Sequelize.DataTypes.STRING,
-        unique: true
+        type: String,
+        unique: true,
+        required: true
     },
     fullUrl: {
-        type: Sequelize.DataTypes.STRING,
-        allowNull: false,
+        type: String,
+        required: true,
         validate: {
-            isUrl: true
+            validator: function(v) {
+                return /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/.test(v);
+            },
+            message: props => `${props.value} is not a valid URL!`
         }
     }
+}, {
+    timestamps: true
 });
 
-module.exports = { db, Urls };
+module.exports = mongoose.model('Url', urlSchema);
