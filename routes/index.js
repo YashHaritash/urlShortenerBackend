@@ -2,23 +2,36 @@ const route = require('express').Router();
 const Urls = require('../db/model').Urls;
 
 async function getUniqueShortUrl() {
-    let url;
-    let isUnique = false;
     const s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let url = "";
 
-    while (!isUnique) {
-        url = "";
-        for (let i = 0; i < 5; i++) {
-            url += s[Math.floor(Math.random() * s.length)];
-        }
-        const existingUrl = await Urls.findOne({ where: { shortUrl: url } });
-        if (!existingUrl) {
-            isUnique = true;
-        }
+    for (let i = 0; i < 5; i++) {
+        url += s[Math.floor(Math.random() * s.length)];
     }
 
     return url;
 }
+
+
+const MAX_URLS = 1000;
+
+async function checkAndClearUrls() {
+    const count = await Urls.count(); 
+
+    if (count > MAX_URLS) {
+
+        const oldestUrls = await Urls.findAll({
+            order: [['createdAt', 'ASC']],
+            limit: count - MAX_URLS 
+        });
+
+
+        for (let url of oldestUrls) {
+            await url.destroy();
+        }
+    }
+}
+
 
 route.get('/:short', async (req, res) => {
     try {
@@ -36,6 +49,7 @@ route.get('/:short', async (req, res) => {
     }
 });
 
+
 route.post('/new', async (req, res) => {
     try {
         const { full } = req.body;
@@ -43,26 +57,22 @@ route.post('/new', async (req, res) => {
             return res.status(400).send({ error: "Full URL is required" });
         }
 
-        // Check if the given full URL is already a short URL
-        const existingShortUrl = await Urls.findOne({ where: { shortUrl: full } });
-        if (existingShortUrl) {
-            return res.status(400).send({ error: "Provided URL is already a short URL" });
-        }
-
-        // Check if full URL already exists
         const existingFullUrl = await Urls.findOne({ where: { fullUrl: full } });
         if (existingFullUrl) {
             return res.status(200).send({ message: "Full URL already exists", shortUrl: existingFullUrl.shortUrl });
         }
 
-        // Generate a unique short URL
         const shortUrl = await getUniqueShortUrl();
 
-        // Create new URL entry
+
         const newAdd = await Urls.create({ shortUrl, fullUrl: full });
+
+
+        await checkAndClearUrls();
 
         res.status(201).send(newAdd);
     } catch (error) {
+        console.error("Error in creating short URL:", error);
         res.status(500).send({ error: "Internal Server Error" });
     }
 });
