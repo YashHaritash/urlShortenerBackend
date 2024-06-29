@@ -53,13 +53,13 @@ route.post('/new', async (req, res) => {
         //     return res.status(400).send({ error: "Invalid URL" });
         // }
 
-        // Check if the input URL is already a shortened URL
+      
         const existingShortUrl = await Url.findOne({ shortUrl: full.slice(-5) });
         if (existingShortUrl) {
             return res.status(200).send({ message: "Input URL is already a shortened URL" , shortUrl: existingShortUrl.shortUrl });
         }
 
-        // Check if the full URL already exists
+
         const existingFullUrl = await Url.findOne({ fullUrl: full });
         if (existingFullUrl) {
             return res.status(200).send({ message: "Full URL already exists", shortUrl: existingFullUrl.shortUrl });
