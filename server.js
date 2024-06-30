@@ -18,7 +18,7 @@ app.use('/', urlRoute);
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
         app.listen(3131, () => {
-            console.log("Server Running at http://localhost:3131");
+            console.log("Server Running at https://urlshortenerbackend-viev.onrender.com");
         });
     })
     .catch((err) => {

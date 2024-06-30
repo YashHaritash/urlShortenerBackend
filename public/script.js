@@ -10,10 +10,10 @@ $(() => {
                 return;
             }
     
-            $.post('http://localhost:3131/new', {
+            $.post('https://urlshortenerbackend-viev.onrender.com/new', {
                 full: inp.val()
             }, (data) => {
-                inp.val(`localhost:3131/${data.shortUrl}`);
+                inp.val(`https://urlshortenerbackend-viev.onrender.com/${data.shortUrl}`);
             });
         } catch (error) {
             console.log(error);
