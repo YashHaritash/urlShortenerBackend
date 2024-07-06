@@ -28,6 +28,21 @@ async function checkAndClearUrls() {
     }
 }
 
+route.get('/:short', async (req, res) => {
+    try {
+        const data = await Url.findOne({ shortUrl: req.params.short });
+
+        if (data) {
+            res.redirect(data.fullUrl);
+        } else {
+            res.status(404).send({ error: "No such URL Found" });
+        }
+    } catch (error) {
+        console.error("Error retrieving URL:", error);
+        res.status(500).send({ error: "Internal Server Error" });
+    }
+});
+
 route.post('/new', async (req, res) => {
     try {
         const { full, custom } = req.body;
