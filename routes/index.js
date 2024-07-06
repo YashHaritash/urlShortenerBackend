@@ -55,7 +55,7 @@ route.post('/new', async (req, res) => {
 
         const existingFullUrl = await Url.findOne({ fullUrl: full });
         if (existingFullUrl) {
-            return res.status(400).send({ message: "Full URL already exists", shortUrl: existingFullUrl.shortUrl });
+            return res.status(200).send({ message: "Full URL already exists", shortUrl: existingFullUrl.shortUrl });
         }
 
         const existingShortUrl = await Url.findOne({ shortUrl: full.substring(full.lastIndexOf('/') + 1) });
