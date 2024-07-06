@@ -28,39 +28,24 @@ async function checkAndClearUrls() {
     }
 }
 
-route.get('/:short', async (req, res) => {
-    try {
-        const data = await Url.findOne({ shortUrl: req.params.short });
-
-        if (data) {
-            res.redirect(data.fullUrl);
-        } else {
-            res.status(404).send({ error: "No such URL Found" });
-        }
-    } catch (error) {
-        console.error("Error retrieving URL:", error);
-        res.status(500).send({ error: "Internal Server Error" });
-    }
-});
-
 route.post('/new', async (req, res) => {
     try {
         const { full, custom } = req.body;
 
-        if (!full) {
-            return res.status(400).send({ error: "Full URL is required" });
-        }
-
-        const domain = new URL(full).hostname;
-
-        const existingShortUrl = await Url.findOne({ shortUrl: domain });
-        if (existingShortUrl) {
-            return res.status(200).send({ message: "Input URL is already a shortened URL", shortUrl: existingShortUrl.shortUrl });
+        try {
+            new URL(full);
+        } catch (error) {
+            return res.status(400).send({ error: "Valid full URL is required" });
         }
 
         const existingFullUrl = await Url.findOne({ fullUrl: full });
         if (existingFullUrl) {
             return res.status(200).send({ message: "Full URL already exists", shortUrl: existingFullUrl.shortUrl });
+        }
+
+        const existingShortUrl = await Url.findOne({ shortUrl: full.substring(full.lastIndexOf('/') + 1) });
+        if (existingShortUrl) {
+            return res.status(200).send({ message: "Input URL is already a shortened URL", shortUrl: existingShortUrl.shortUrl });
         }
 
         if (custom) {
