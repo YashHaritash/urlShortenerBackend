@@ -46,12 +46,12 @@ route.get('/:short', async (req, res) => {
 route.post('/new', async (req, res) => {
     try {
         const { full, custom } = req.body;
+
         if (!full) {
             return res.status(400).send({ error: "Full URL is required" });
         }
 
-        
-        const domain = full.split('/')[2];
+        const domain = new URL(full).hostname;
 
         const existingShortUrl = await Url.findOne({ shortUrl: domain });
         if (existingShortUrl) {
@@ -66,7 +66,7 @@ route.post('/new', async (req, res) => {
         if (custom) {
             const existingCustomUrl = await Url.findOne({ shortUrl: custom });
             if (existingCustomUrl) {
-                return res.status(400).send({ error: "Custom short URL already in use" });
+                return res.status(200).send({ message: "Custom short URL already in use" });
             }
         }
 
