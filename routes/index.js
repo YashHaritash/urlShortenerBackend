@@ -50,7 +50,10 @@ route.post('/new', async (req, res) => {
             return res.status(400).send({ error: "Full URL is required" });
         }
 
-        const existingShortUrl = await Url.findOne({ shortUrl: full.slice(-5) });
+        
+        const domain = full.split('/')[2];
+
+        const existingShortUrl = await Url.findOne({ shortUrl: domain });
         if (existingShortUrl) {
             return res.status(200).send({ message: "Input URL is already a shortened URL", shortUrl: existingShortUrl.shortUrl });
         }
@@ -80,5 +83,6 @@ route.post('/new', async (req, res) => {
         res.status(500).send({ error: "Internal Server Error" });
     }
 });
+
 
 module.exports = route;
