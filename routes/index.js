@@ -40,18 +40,18 @@ route.post('/new', async (req, res) => {
 
         const existingFullUrl = await Url.findOne({ fullUrl: full });
         if (existingFullUrl) {
-            return res.status(200).send({ message: "Full URL already exists", shortUrl: existingFullUrl.shortUrl });
+            return res.status(400).send({ message: "Full URL already exists", shortUrl: existingFullUrl.shortUrl });
         }
 
         const existingShortUrl = await Url.findOne({ shortUrl: full.substring(full.lastIndexOf('/') + 1) });
         if (existingShortUrl) {
-            return res.status(200).send({ message: "Input URL is already a shortened URL", shortUrl: existingShortUrl.shortUrl });
+            return res.status(400).send({ message: "Input URL is already a shortened URL", shortUrl: existingShortUrl.shortUrl });
         }
 
         if (custom) {
             const existingCustomUrl = await Url.findOne({ shortUrl: custom });
             if (existingCustomUrl) {
-                return res.status(200).send({ message: "Custom short URL already in use" });
+                return res.status(400).send({ message: "Custom short URL already in use" });
             }
         }
 
