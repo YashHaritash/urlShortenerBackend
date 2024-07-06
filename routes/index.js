@@ -4,14 +4,14 @@ const Url = require('./../db/model');
 const validator = require('validator');
 
 async function getUniqueShortUrl() {
-    const s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let url = "";
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let shortUrl = "";
 
     for (let i = 0; i < 5; i++) {
-        url += s[Math.floor(Math.random() * s.length)];
+        shortUrl += characters[Math.floor(Math.random() * characters.length)];
     }
 
-    return url;
+    return shortUrl;
 }
 
 const MAX_URLS = 1000;
@@ -38,41 +38,43 @@ route.get('/:short', async (req, res) => {
             res.status(404).send({ error: "No such URL Found" });
         }
     } catch (error) {
+        console.error("Error retrieving URL:", error);
         res.status(500).send({ error: "Internal Server Error" });
     }
 });
 
 route.post('/new', async (req, res) => {
     try {
-        const { full } = req.body;
+        const { full, custom } = req.body;
         if (!full) {
             return res.status(400).send({ error: "Full URL is required" });
         }
 
-        // if (!validator.isURL(full)) {
-        //     return res.status(400).send({ error: "Invalid URL" });
-        // }
-
-      
         const existingShortUrl = await Url.findOne({ shortUrl: full.slice(-5) });
         if (existingShortUrl) {
-            return res.status(200).send({ message: "Input URL is already a shortened URL" , shortUrl: existingShortUrl.shortUrl });
+            return res.status(200).send({ message: "Input URL is already a shortened URL", shortUrl: existingShortUrl.shortUrl });
         }
-
 
         const existingFullUrl = await Url.findOne({ fullUrl: full });
         if (existingFullUrl) {
             return res.status(200).send({ message: "Full URL already exists", shortUrl: existingFullUrl.shortUrl });
         }
 
-        const shortUrl = await getUniqueShortUrl();
+        if (custom) {
+            const existingCustomUrl = await Url.findOne({ shortUrl: custom });
+            if (existingCustomUrl) {
+                return res.status(400).send({ error: "Custom short URL already in use" });
+            }
+        }
 
-        const newAdd = new Url({ shortUrl, fullUrl: full });
-        await newAdd.save();
+        const shortUrl = custom || await getUniqueShortUrl();
+
+        const newUrl = new Url({ shortUrl, fullUrl: full });
+        await newUrl.save();
 
         await checkAndClearUrls();
 
-        res.status(201).send(newAdd);
+        res.status(201).send(newUrl);
     } catch (error) {
         console.error("Error in creating short URL:", error);
         res.status(500).send({ error: "Internal Server Error" });
