@@ -1,26 +1,68 @@
-# urlShortner
+# URL Shortener Service
 
-## 1. Install
+A URL Shortener Service built using Node.js and Express.js.
 
-- npm i express sequelize mysql2
+## Features
 
+- Generate unique 5-character short URLs.
+- Accept custom short URLs.
+- Redirect to original URLs.
+- Maintain max 1000 URLs by removing the oldest ones.
+- Validate full URLs.
+- Prevent duplicate shortened URLs.
+- Graceful error handling.
 
-## 2. mysql -u root -p  
+## Prerequisites
 
-- mysql> create database urlshortdb;
-Query OK, 1 row affected (0.01 sec)
+- Node.js
+- npm
+- MongoDB
 
-- mysql> create user urluser identified by 'urlpass';
-Query OK, 0 rows affected (0.02 sec)
+## Installation
 
-- mysql> grant all privileges on urlshortdb.* to urluser;
-Query OK, 0 rows affected (0.00 sec)
+1. Clone the repo:
+    ```bash
+    git clone https://github.com/yourusername/url-shortener.git
+    cd url-shortener
+    ```
+2. Install dependencies:
+    ```bash
+    npm install
+    ```
+3. Create a `.env` file:
+    ```env
+    MONGODB_URI=mongodb://localhost:27017/urlshortener
+    ```
+4. Start the server:
+    ```bash
+    npm start
+    ```
 
-- mysql> flush privileges;
-Query OK, 0 rows affected (0.01 sec)
+## API Endpoints
 
-- mysql> exit
+### Create a New Short URL
 
-##  3. mysql -u urluser -p
+- **POST /new**
+- **Request Body:**
+    ```json
+    {
+        "full": "http://example.com",
+        "custom": "customShortUrl" 
+    }
+    ```
+- **Responses:**
+    - `201 Created` - New short URL created.
+    - `200 OK` - Existing short URL returned.
+    - `400 Bad Request` - Invalid full URL or custom short URL in use.
+    - `500 Internal Server Error` - Error in creating short URL.
 
-- mysql> show databases; //Must show urlshortdb
+### Redirect to Full URL
+
+- **GET /:short**
+- **Responses:**
+    - `302 Found` - Redirects to full URL.
+    - `404 Not Found` - No such short URL.
+    - `500 Internal Server Error` - Error in retrieving URL.
+
+## Contact
+For any queries, drop an email @ yaaash04@gmail.com
