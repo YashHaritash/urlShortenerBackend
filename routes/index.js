@@ -6,32 +6,15 @@ const validator = require('validator');
 async function getUniqueShortUrl() {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let shortUrl = "";
-
     for (let i = 0; i < 5; i++) {
         shortUrl += characters[Math.floor(Math.random() * characters.length)];
     }
-
     return shortUrl;
-}
-
-const MAX_URLS = 1000;
-
-async function checkAndClearUrls() {
-    const count = await Url.countDocuments();
-
-    if (count > MAX_URLS) {
-        const oldestUrls = await Url.find().sort({ createdAt: 1 }).limit(count - MAX_URLS);
-
-        for (let url of oldestUrls) {
-            await url.remove();
-        }
-    }
 }
 
 route.get('/:short', async (req, res) => {
     try {
         const data = await Url.findOne({ shortUrl: req.params.short });
-
         if (data) {
             res.redirect(data.fullUrl);
         } else {
@@ -46,7 +29,6 @@ route.get('/:short', async (req, res) => {
 route.post('/new', async (req, res) => {
     try {
         const { full, custom } = req.body;
-
         try {
             new URL(full);
         } catch (error) {
@@ -71,18 +53,13 @@ route.post('/new', async (req, res) => {
         }
 
         const shortUrl = custom || await getUniqueShortUrl();
-
-        const newUrl = new Url({ shortUrl, fullUrl: full });
+        const newUrl = new Url({ shortUrl, fullUrl: full, createdAt: new Date() });
         await newUrl.save();
-
-        await checkAndClearUrls();
-
         res.status(201).send(newUrl);
     } catch (error) {
         console.error("Error in creating short URL:", error);
         res.status(500).send({ error: "Internal Server Error" });
     }
 });
-
 
 module.exports = route;

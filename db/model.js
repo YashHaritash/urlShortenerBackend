@@ -16,9 +16,12 @@ const urlSchema = new Schema({
             },
             message: props => `${props.value} is not a valid URL!`
         }
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+        expires: '24h'
     }
-}, {
-    timestamps: true
 });
 
 module.exports = mongoose.model('Url', urlSchema);

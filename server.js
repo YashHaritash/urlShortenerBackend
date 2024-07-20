@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 // app.use('/home', express.static(__dirname + '/public'));
 app.use('/', urlRoute);
 
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         app.listen(3131, () => {
             console.log("Server Running at https://urlshortenerbackend-viev.onrender.com");
